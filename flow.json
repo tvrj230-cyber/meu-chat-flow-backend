@@ -1,0 +1,415 @@
+{
+  "nodes": [
+    {
+      "id": "dndnode_0",
+      "type": "menuNode",
+      "position": {
+        "x": -279.95090502594655,
+        "y": 4.1395739481019405
+      },
+      "data": {
+        "label": "Menu Interativo",
+        "text": "Olá 👋 seja bem-vindo ao Flix Streaming!\nAqui você assiste canais, filmes e séries com qualidade total 😎\n\nMe diz, você quer:",
+        "options": [
+          "📺 Fazer um teste grátis",
+          "💰 Ver planos",
+          "❓ Tirar dúvidas"
+        ]
+      },
+      "width": 262,
+      "height": 421,
+      "positionAbsolute": {
+        "x": -279.95090502594655,
+        "y": 4.1395739481019405
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "dndnode_1",
+      "type": "menuNode",
+      "position": {
+        "x": 436.71462039607127,
+        "y": -43.49619705355671
+      },
+      "data": {
+        "label": "Menu Interativo",
+        "text": "Perfeito! Vou liberar um teste pra você agora 🔥\n\nEm qual dispositivo você vai assistir?",
+        "options": [
+          "SMART TV",
+          "TV BOX/FIRE STICK/TV ANDROID",
+          "CELULAR"
+        ]
+      },
+      "width": 262,
+      "height": 421,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 436.71462039607127,
+        "y": -43.49619705355671
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_2",
+      "type": "conditionNode",
+      "position": {
+        "x": -705.065045656542,
+        "y": 48.00209925431632
+      },
+      "data": {
+        "label": "Horários",
+        "days": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          0,
+          6
+        ],
+        "startTime": "09:00",
+        "endTime": "22:00"
+      },
+      "width": 385,
+      "height": 392,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -705.065045656542,
+        "y": 48.00209925431632
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_3",
+      "type": "menuNode",
+      "position": {
+        "x": 903.6580508949528,
+        "y": -89.09389986366489
+      },
+      "data": {
+        "label": "Menu Interativo",
+        "text": "Qual a marca da sua TV?",
+        "options": [
+          "SAMSUNG/LG",
+          "ROKU TV"
+        ]
+      },
+      "width": 262,
+      "height": 368,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 903.6580508949528,
+        "y": -89.09389986366489
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_5",
+      "type": "messageNode",
+      "position": {
+        "x": 901.4457595023332,
+        "y": 336.9481291771448
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Siga esse passo a passo 👇\n\n1- Baixe o app Downloader\n2- Abra e digite o código: 2317023\n3- Instale o app do Flix Streaming\n\nQuando terminar, me envia uma foto do aplicativo 👇"
+      },
+      "width": 262,
+      "height": 197,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 901.4457595023332,
+        "y": 336.9481291771448
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_6",
+      "type": "menuNode",
+      "position": {
+        "x": 896.1980196041713,
+        "y": 576.8769654675175
+      },
+      "data": {
+        "label": "Menu Interativo",
+        "text": "Qual sistema operacional do seu celular?",
+        "options": [
+          "Android",
+          "iOS/iPhone"
+        ]
+      },
+      "width": 262,
+      "height": 368,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 896.1980196041713,
+        "y": 576.8769654675175
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_7",
+      "type": "messageNode",
+      "position": {
+        "x": 1315.583353872501,
+        "y": -124.97899793814872
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Excelente, para o seu modelo de TV nós utilizamos o aplicativo *IBO PLAYER*.\nPeço que assim que instalar ele, abra-o e nos envie uma foto do *MAC* e *KEY* para que possamos fazer a configuração."
+      },
+      "width": 262,
+      "height": 197,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1315.583353872501,
+        "y": -124.97899793814872
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_8",
+      "type": "messageNode",
+      "position": {
+        "x": 1317.0914212013258,
+        "y": 128.31549642889004
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Excelente, para o seu modelo de TV nós utilizamos o aplicativo *IBO PRO*.\nPeço que assim que instalar ele, abra-o e nos envie uma foto do *MAC* e *KEY* para que possamos fazer a configuração."
+      },
+      "width": 262,
+      "height": 197,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1317.0914212013258,
+        "y": 128.31549642889004
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_9",
+      "type": "messageNode",
+      "position": {
+        "x": 1332.724276880756,
+        "y": 567.4480110729988
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Perfeito! \nUtiliza esse link para instalar o aplicativo: https://fui.ai/flix\nAssim que instalar ele, abre ele e nos envie um print para a configuração ser feita."
+      },
+      "width": 262,
+      "height": 197,
+      "positionAbsolute": {
+        "x": 1332.724276880756,
+        "y": 567.4480110729988
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "dndnode_10",
+      "type": "messageNode",
+      "position": {
+        "x": 1343.1708836403095,
+        "y": 849.506393580943
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Perfeito! Para iPhone ou sistema iOS utilizamos o aplicativo *BOB PLAYER*.\nInstala ele, assim que abri-lo me envia um print que contenha o *MAC* e o *KEY* para configuração do aplicativo."
+      },
+      "width": 262,
+      "height": 197,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1343.1708836403095,
+        "y": 849.506393580943
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_12",
+      "type": "menuNode",
+      "position": {
+        "x": 124.06359506502213,
+        "y": 268.52880275551763
+      },
+      "data": {
+        "label": "Menu Interativo",
+        "text": "*Assine Agora* e garanta esse *valor promocional* para sempre nas suas *renovações.*",
+        "options": [
+          "MENSAL: 39,99 - 2 TELAS",
+          "TRIMESTRAL - 99,99 - 2 TELAS",
+          "SEMESTRAL - R$179,99 - 2 TELAS",
+          "ANUAL - 299,99 - 2 TELAS"
+        ]
+      },
+      "width": 262,
+      "height": 474,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 124.06359506502213,
+        "y": 268.52880275551763
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_13",
+      "type": "actionNode",
+      "position": {
+        "x": 81.04778524759263,
+        "y": 846.8085267876907
+      },
+      "data": {
+        "label": "Supabase Action",
+        "actionType": "human_transfer"
+      },
+      "width": 300,
+      "height": 159,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 81.04778524759263,
+        "y": 846.8085267876907
+      },
+      "dragging": false
+    },
+    {
+      "id": "dndnode_14",
+      "type": "messageNode",
+      "position": {
+        "x": -348.9522147524074,
+        "y": 576.8085267876907
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "Perfeito! Escreva aqui sua dúvida enquanto te encaminhamos para um atendente humano..."
+      },
+      "width": 262,
+      "height": 197,
+      "positionAbsolute": {
+        "x": -348.9522147524074,
+        "y": 576.8085267876907
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "dndnode_0",
+      "sourceHandle": "option-0",
+      "target": "dndnode_1",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_0option-0-dndnode_1"
+    },
+    {
+      "source": "dndnode_2",
+      "sourceHandle": "true",
+      "target": "dndnode_0",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_2true-dndnode_0"
+    },
+    {
+      "source": "dndnode_1",
+      "sourceHandle": "option-0",
+      "target": "dndnode_3",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_1option-0-dndnode_3"
+    },
+    {
+      "source": "dndnode_1",
+      "sourceHandle": "option-1",
+      "target": "dndnode_5",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_1option-1-dndnode_5"
+    },
+    {
+      "source": "dndnode_1",
+      "sourceHandle": "option-2",
+      "target": "dndnode_6",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_1option-2-dndnode_6"
+    },
+    {
+      "source": "dndnode_3",
+      "sourceHandle": "option-0",
+      "target": "dndnode_7",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_3option-0-dndnode_7"
+    },
+    {
+      "source": "dndnode_3",
+      "sourceHandle": "option-1",
+      "target": "dndnode_8",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_3option-1-dndnode_8"
+    },
+    {
+      "source": "dndnode_6",
+      "sourceHandle": "option-0",
+      "target": "dndnode_9",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_6option-0-dndnode_9"
+    },
+    {
+      "source": "dndnode_6",
+      "sourceHandle": "option-1",
+      "target": "dndnode_10",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_6option-1-dndnode_10"
+    },
+    {
+      "source": "dndnode_0",
+      "sourceHandle": "option-1",
+      "target": "dndnode_12",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_0option-1-dndnode_12"
+    },
+    {
+      "source": "dndnode_12",
+      "sourceHandle": "option-0",
+      "target": "dndnode_1",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_12option-0-dndnode_1"
+    },
+    {
+      "source": "dndnode_12",
+      "sourceHandle": "option-1",
+      "target": "dndnode_1",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_12option-1-dndnode_1"
+    },
+    {
+      "source": "dndnode_12",
+      "sourceHandle": "option-2",
+      "target": "dndnode_1",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_12option-2-dndnode_1"
+    },
+    {
+      "source": "dndnode_12",
+      "sourceHandle": "option-3",
+      "target": "dndnode_1",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_12option-3-dndnode_1"
+    },
+    {
+      "source": "dndnode_0",
+      "sourceHandle": "option-2",
+      "target": "dndnode_14",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_0option-2-dndnode_14"
+    },
+    {
+      "source": "dndnode_14",
+      "sourceHandle": null,
+      "target": "dndnode_13",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_14-dndnode_13"
+    }
+  ],
+  "viewport": {
+    "x": -32.523892623796314,
+    "y": 92.59573660615467,
+    "zoom": 0.5
+  }
+}
