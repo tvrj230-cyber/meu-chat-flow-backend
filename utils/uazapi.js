@@ -3,7 +3,10 @@ require('dotenv').config();
 
 const UAZAPI_TOKEN = process.env.UAZAPI_TOKEN || '';
 const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '1234';
-const BASE_URL = `https://api.uazapi.com/v1/instance/${UAZAPI_INSTANCE}`;
+const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
+
+// Monta a base de acordo com a sua White-label da UAZAPI
+const BASE_URL = `${UAZAPI_SERVER}/v1/instance/${UAZAPI_INSTANCE}`;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -28,7 +31,6 @@ async function sendText(phone, text) {
 
 async function sendMenu(phone, text, options) {
   try {
-    // Formata do jeito estrito que a rota /send/menu exige
     const formattedOptions = options.map((opt, i) => ({
       id: String(i + 1),
       title: opt
@@ -37,6 +39,8 @@ async function sendMenu(phone, text, options) {
     const res = await api.post('/send/menu', {
       number: phone,
       text: text,
+      title: "Escolha uma opção",
+      buttonText: "Opções", // Exigência de alguns provedores WhatsApp
       options: formattedOptions
     });
     console.log(`[UAZAPI] Menu enviado -> ${phone}`);
