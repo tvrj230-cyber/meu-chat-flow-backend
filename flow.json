@@ -54,8 +54,8 @@
       "id": "dndnode_2",
       "type": "conditionNode",
       "position": {
-        "x": -705.065045656542,
-        "y": 48.00209925431632
+        "x": -773.065045656542,
+        "y": -23.997900745683694
       },
       "data": {
         "label": "Horários",
@@ -75,8 +75,8 @@
       "height": 392,
       "selected": false,
       "positionAbsolute": {
-        "x": -705.065045656542,
-        "y": 48.00209925431632
+        "x": -773.065045656542,
+        "y": -23.997900745683694
       },
       "dragging": false
     },
@@ -291,6 +291,26 @@
         "x": -348.9522147524074,
         "y": 576.8085267876907
       }
+    },
+    {
+      "id": "dndnode_16",
+      "type": "messageNode",
+      "position": {
+        "x": -682.6933158789996,
+        "y": 521.7729312940597
+      },
+      "data": {
+        "label": "Mensagem",
+        "text": "🚫 *No momento estamos fora do horário de atendimento*\n\nOlá! 👋 Você entrou em contato com o *Flix Streaming*, mas nosso atendimento funciona em horário comercial.\n\n⏰ Assim que voltarmos, vamos te responder o mais rápido possível!\n"
+      },
+      "width": 262,
+      "height": 197,
+      "selected": true,
+      "positionAbsolute": {
+        "x": -682.6933158789996,
+        "y": 521.7729312940597
+      },
+      "dragging": false
     }
   ],
   "edges": [
@@ -405,11 +425,18 @@
       "target": "dndnode_13",
       "targetHandle": null,
       "id": "reactflow__edge-dndnode_14-dndnode_13"
+    },
+    {
+      "source": "dndnode_2",
+      "sourceHandle": "false",
+      "target": "dndnode_16",
+      "targetHandle": null,
+      "id": "reactflow__edge-dndnode_2false-dndnode_16"
     }
   ],
   "viewport": {
-    "x": -32.523892623796314,
-    "y": 92.59573660615467,
+    "x": 455.0010925604352,
+    "y": 85.85020470598644,
     "zoom": 0.5
   }
 }
