@@ -5,14 +5,14 @@ const UAZAPI_TOKEN = process.env.UAZAPI_TOKEN || '';
 const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '1234';
 const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
 
-// Pelo Erro 404, a rota base provavelmente é reta, sem /v1/instance/
-const BASE_URL = UAZAPI_SERVER; 
+// A documentação sempre usa a estrutura /v1/instance/{NOME} como base de injeção!
+const BASE_URL = `${UAZAPI_SERVER}/v1/instance/${UAZAPI_INSTANCE}`;
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Authorization': `Bearer ${UAZAPI_TOKEN}`,
-    'apikey': UAZAPI_TOKEN, // Vários serviços usam esse header
+    'apikey': UAZAPI_TOKEN,
     'Content-Type': 'application/json'
   }
 });
@@ -20,7 +20,6 @@ const api = axios.create({
 async function sendText(phone, text) {
   try {
     const res = await api.post('/send/text', {
-      instance: UAZAPI_INSTANCE, // Alguns serviços exigem no body
       number: phone,
       text: text
     });
@@ -33,18 +32,12 @@ async function sendText(phone, text) {
 
 async function sendMenu(phone, text, options) {
   try {
-    const formattedOptions = options.map((opt, i) => ({
-      id: String(i + 1),
-      title: opt
-    }));
-
+    // Agora usando EXATAMENTE o schema genial que você mandou da documentação:
     const res = await api.post('/send/menu', {
-      instance: UAZAPI_INSTANCE,
       number: phone,
+      type: "button",
       text: text,
-      title: "Escolha uma opção",
-      buttonText: "Opções", // Exigência de alguns provedores WhatsApp
-      options: formattedOptions
+      choices: options
     });
     console.log(`[UAZAPI] Menu enviado -> ${phone}`);
     return res.data;
