@@ -5,21 +5,24 @@ const UAZAPI_TOKEN = process.env.UAZAPI_TOKEN || '';
 const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '1234';
 const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
 
-// A documentação sempre usa a estrutura /v1/instance/{NOME} como base de injeção!
-const BASE_URL = `${UAZAPI_SERVER}/v1/instance/${UAZAPI_INSTANCE}`;
+// A URL que você enviou é reta, sem /v1/instance
+const BASE_URL = UAZAPI_SERVER;
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Authorization': `Bearer ${UAZAPI_TOKEN}`,
     'apikey': UAZAPI_TOKEN,
+    'instance': UAZAPI_INSTANCE, // Alguns pedem no header
     'Content-Type': 'application/json'
   }
 });
 
 async function sendText(phone, text) {
   try {
+    // Limpo exatamente como no cURL (a identificação da instância vai só no seu Token gerado)
     const res = await api.post('/send/text', {
+      instance: UAZAPI_INSTANCE,
       number: phone,
       text: text
     });
@@ -32,8 +35,9 @@ async function sendText(phone, text) {
 
 async function sendMenu(phone, text, options) {
   try {
-    // Agora usando EXATAMENTE o schema genial que você mandou da documentação:
+    // Rota cURL pura como na documentação oficial
     const res = await api.post('/send/menu', {
+      instance: UAZAPI_INSTANCE,
       number: phone,
       type: "button",
       text: text,
