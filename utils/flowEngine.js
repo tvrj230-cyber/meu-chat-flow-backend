@@ -63,11 +63,15 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro = "") => {
                      // Lógica MVP: Checa se a pessoa digitou "sim"
                      portaEscolhida = mensagemMembro.toLowerCase().trim() === 'sim' ? 'true' : 'false';
                  } else {
-                     // Lógica MVP Horário (Gera data atual, verifica se tá entre startTime e endTime)
-                     // Substituível facilmente por date-fns
-                     const horaAtual = new Date().getHours();
+                     // Lógica Horário: A Vercel roda em UTC (Inglaterra/EUA), precisamos forçar a hora do Brasil!
+                     const options = { timeZone: 'America/Sao_Paulo', hour: 'numeric', hour12: false };
+                     const horaNoBrasilStr = new Intl.DateTimeFormat('pt-BR', options).format(new Date());
+                     const horaAtual = parseInt(horaNoBrasilStr); // Pega a hora local real de BR
+
                      const start = parseInt((bloco.data.startTime || '08').split(':')[0]);
                      const end = parseInt((bloco.data.endTime || '18').split(':')[0]);
+                     
+                     // Checa se está no expediente
                      portaEscolhida = (horaAtual >= start && horaAtual < end) ? 'true' : 'false';
                  }
 
