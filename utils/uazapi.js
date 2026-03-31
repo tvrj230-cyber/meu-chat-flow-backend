@@ -5,13 +5,14 @@ const UAZAPI_TOKEN = process.env.UAZAPI_TOKEN || '';
 const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '1234';
 const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
 
-// Monta a base de acordo com a sua White-label da UAZAPI
-const BASE_URL = `${UAZAPI_SERVER}/v1/instance/${UAZAPI_INSTANCE}`;
+// Pelo Erro 404, a rota base provavelmente é reta, sem /v1/instance/
+const BASE_URL = UAZAPI_SERVER; 
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Authorization': `Bearer ${UAZAPI_TOKEN}`,
+    'apikey': UAZAPI_TOKEN, // Vários serviços usam esse header
     'Content-Type': 'application/json'
   }
 });
@@ -19,6 +20,7 @@ const api = axios.create({
 async function sendText(phone, text) {
   try {
     const res = await api.post('/send/text', {
+      instance: UAZAPI_INSTANCE, // Alguns serviços exigem no body
       number: phone,
       text: text
     });
@@ -37,6 +39,7 @@ async function sendMenu(phone, text, options) {
     }));
 
     const res = await api.post('/send/menu', {
+      instance: UAZAPI_INSTANCE,
       number: phone,
       text: text,
       title: "Escolha uma opção",

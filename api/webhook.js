@@ -11,12 +11,22 @@ module.exports = async (req, res) => {
         const payload = req.body;
         console.log("\n[WEBHOOK RECEBIDO]", JSON.stringify(payload, null, 2));
 
-        // 2. Extração dos dados do JSON da UAZAPI (O Formato varia de acordo com a doc da Uazapi)
-        // Estamos supondo o esquema padrão de recebimento de mensagem textual ou de botão:
-        const telefoneMembro = payload.sender || payload.instance || "5511999999999";
-        
-        // Pode vir do payload.text (texto livre) ou payload.selectedOption (botão)
-        const mensagemRecebida = payload.text || payload.selectedOption || ""; 
+        // 2. Extração dos dados do JSON da UAZAPI de acordo com o Log enviado
+        // O número vem do sender_pn interno (ex: "55119999999@s.whatsapp.net") ou do wa_chatid
+        let telefoneMembro = "00000";
+        if (payload?.message?.sender_pn) {
+            telefoneMembro = payload.message.sender_pn.split('@')[0];
+        } else if (payload?.chat?.wa_chatid) {
+            telefoneMembro = payload.chat.wa_chatid.split('@')[0];
+        }
+
+        // A mensagem de texto ou clique
+        const mensagemRecebida = payload?.message?.content || payload?.message?.text || "";
+
+        // Impede que as proprias respostas do bot entrem num loop infinito
+        if (payload?.message?.fromMe || payload?.message?.wasSentByApi) {
+            return res.status(200).send("Ignorado: Mensagem do proprio bot");
+        }
 
         // 3. Consulta rápida no Supabase pra saber o estado do membro
         const stateDoLead = await getLeadState(telefoneMembro);
