@@ -1,16 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 const { sendText, sendMenu } = require('./uazapi');
-const { updateLeadState } = require('./supabase');
+const { updateLeadState, getBotFlow } = require('./supabase');
 
-// 1. Carregador Dinâmico do Mapa gerado no Frontend
-const carregarGrafoJSON = () => {
+// 1. Carregador Dinâmico do Mapa gerado no Frontend via Supabase
+const carregarGrafoJSON = async () => {
     try {
-        const filePath = path.join(process.cwd(), 'flow.json');
-        const rawData = fs.readFileSync(filePath);
-        return JSON.parse(rawData);
+        const flowData = await getBotFlow();
+        if (flowData && flowData.nodes && flowData.edges) {
+             return flowData;
+        }
+        console.error("ALERTA: Arquivo de mapa vazio no Banco ou mal formatado!");
+        return { nodes: [], edges: [] };
     } catch (e) {
-        console.error("ALERTA: Arquivo flow.json não encontrado na raiz do projeto Backend!");
+        console.error("ALERTA: Falha de conexão com o Supabase ao carregar o Mapa!");
         return { nodes: [], edges: [] };
     }
 }
@@ -119,7 +122,7 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro = "") => {
 
 // 4. A Função Mestra: Chamada toda vez que o WhatsApp apita
 const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado) => {
-    const flow = carregarGrafoJSON();
+    const flow = await carregarGrafoJSON();
 
     // Cenário 1: Lead completamente novo (Nunca falou ou State resetado)
     if (!posicaoAtualId) {
