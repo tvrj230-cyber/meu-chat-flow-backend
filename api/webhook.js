@@ -20,8 +20,17 @@ module.exports = async (req, res) => {
             telefoneMembro = payload.chat.wa_chatid.split('@')[0];
         }
 
-        // A mensagem de texto ou clique
-        const mensagemRecebida = payload?.message?.content || payload?.message?.text || "";
+        // A mensagem de texto ou clique (extração cirúrgica)
+        let mensagemRecebida = "";
+        if (payload?.message?.buttonOrListid) {
+             mensagemRecebida = payload.message.buttonOrListid; // Clique no Menu
+        } else if (payload?.message?.vote) {
+             mensagemRecebida = payload.message.vote; // Clique na Enquete
+        } else if (typeof payload?.message?.content === 'string') {
+             mensagemRecebida = payload.message.content; // Texto cru
+        } else if (payload?.message?.text) {
+             mensagemRecebida = payload.message.text; // Texto limpo
+        }
 
         // Impede que as proprias respostas do bot entrem num loop infinito
         if (payload?.message?.fromMe || payload?.message?.wasSentByApi) {
