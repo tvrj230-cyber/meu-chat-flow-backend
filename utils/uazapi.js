@@ -40,7 +40,7 @@ async function sendMenu(phone, text, options) {
     const res = await axios.post(url, payload, { headers: uazapiHeaders });
     return res.data;
   } catch (error) { 
-    console.error(`[UAZAPI ERRO Menu]`, error?.response?.data || error.message); 
+        console.error(`[UAZAPI ERRO Txt]`, error?.response?.data || error?.message);
   }
 }
 
