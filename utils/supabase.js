@@ -5,7 +5,6 @@ const supabaseUrl = process.env.SUPABASE_URL || 'https://fake.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY || 'fake-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Busca o Lead no Banco de Dados para ver onde ele parou
 async function getLeadState(phone) {
   let { data, error } = await supabase
     .from('leads')
@@ -14,8 +13,6 @@ async function getLeadState(phone) {
     .single();
 
   if (!data) {
-    // Lead Novo: Insere ele e deixa current_node vazio
-    // Preenchendo as colunas phone e whatsapp para não dar erro NotFound do Supabase
     const { data: newData, error: insertError } = await supabase
       .from('leads')
       .insert([{ phone, whatsapp: phone, current_node: null }])
@@ -30,13 +27,8 @@ async function getLeadState(phone) {
   return data;
 }
 
-// Atualiza o estado ou insere uma TAG da Fase 1
 async function updateLeadState(phone, nodeId, tag = null) {
   const updates = { current_node: nodeId };
-  
-  // Se o nó for um TagNode, a gente pode atualizar outra coluna, mas vamos salvar
-  // a lógia aqui flexível o suficiente.
-
   const { error } = await supabase
     .from('leads')
     .update(updates)
@@ -54,7 +46,7 @@ async function getBotFlow() {
     .single();
     
   if (error || !data) {
-    console.error("Erro ao buscar o webhook/fluxo do Supabase:", error);
+    console.error("Erro ao buscar fluxo Supabase:", error);
     return null;
   }
   return data.flow_data;
