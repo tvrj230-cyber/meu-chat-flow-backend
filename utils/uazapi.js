@@ -1,52 +1,56 @@
 const axios = require('axios');
-require('dotenv').config();
 
 const UAZAPI_TOKEN = process.env.UAZAPI_TOKEN || '';
-const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '1234';
+const UAZAPI_INSTANCE = process.env.UAZAPI_INSTANCE || '';
 const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
 
-// A URL que você enviou é reta, sem /v1/instance
-const BASE_URL = UAZAPI_SERVER;
-
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    'Authorization': `Bearer ${UAZAPI_TOKEN}`,
-    'apikey': UAZAPI_TOKEN,
-    'instance': UAZAPI_INSTANCE, // Alguns pedem no header
+// Monta as requisições de forma limpa, garantindo a injeção em tempo real!
+async function buildHeaders() {
+  return {
+    'apikey': process.env.UAZAPI_TOKEN,
     'Content-Type': 'application/json'
-  }
-});
+  };
+}
 
 async function sendText(phone, text) {
   try {
-    // Limpo exatamente como no cURL (a identificação da instância vai só no seu Token gerado)
-    const res = await api.post('/send/text', {
-      instance: UAZAPI_INSTANCE,
+    const headers = await buildHeaders();
+    console.log(`[DEBUG] Disparando Txt. APIKEY tem: ${headers.apikey ? headers.apikey.length : 0} caracteres.`);
+    
+    // Rota no padrão puro da Evolution API (UAZAPI V2)
+    const url = `${UAZAPI_SERVER}/message/sendText/${UAZAPI_INSTANCE}`;
+    const payload = {
       number: phone,
-      text: text
-    });
-    console.log(`[UAZAPI] Texto enviado -> ${phone}`);
+      options: { delay: 1200 },
+      textMessage: { text: text }
+    };
+
+    const res = await axios.post(url, payload, { headers });
+    console.log(`[UAZAPI Sucesso] Texto enviado -> ${phone}`);
     return res.data;
   } catch (error) {
-    console.error(`[UAZAPI ERRO Txt]`, error?.response?.data || error.message);
+     console.error(`[UAZAPI ERRO Txt]`, error?.response?.data || error.message);
   }
 }
 
 async function sendMenu(phone, text, options) {
   try {
-    // Rota cURL pura como na documentação oficial
-    const res = await api.post('/send/menu', {
-      instance: UAZAPI_INSTANCE,
+    const headers = await buildHeaders();
+    const url = `${UAZAPI_SERVER}/message/sendText/${UAZAPI_INSTANCE}`;
+    
+    const menuBody = text + '\n\n' + options.map((opt, i) => `${i+1} - ${opt}`).join('\n');
+    
+    const payload = {
       number: phone,
-      type: "button",
-      text: text,
-      choices: options
-    });
-    console.log(`[UAZAPI] Menu enviado -> ${phone}`);
+      options: { delay: 1200 },
+      textMessage: { text: menuBody }
+    };
+
+    const res = await axios.post(url, payload, { headers });
+    console.log(`[UAZAPI Sucesso] Menu enviado -> ${phone}`);
     return res.data;
   } catch (error) {
-    console.error(`[UAZAPI ERRO Menu]`, error?.response?.data || error.message);
+     console.error(`[UAZAPI ERRO Menu]`, error?.response?.data || error.message);
   }
 }
 
