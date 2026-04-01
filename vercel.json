@@ -9,13 +9,17 @@
   "crons": [
     {
       "path": "/api/cron-remarketing",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     }
   ],
   "routes": [
     {
       "src": "/api/cron-remarketing",
       "dest": "/api/cron-remarketing.js"
+    },
+    {
+      "src": "/api/webhook",
+      "dest": "/api/webhook.js"
     },
     {
       "src": "/(.*)",
