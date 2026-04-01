@@ -5,60 +5,96 @@ const { updateLeadState, getBotFlow } = require('./supabase');
 
 // 1. Carregador Dinâmico do Mapa gerado no Frontend via Supabase
 const carregarGrafoJSON = async () => {
-    const defaultFlow = { nodes: [], edges: [] };
-    const flowFromDB = await getBotFlow();
-    if (flowFromDB) {
-        return flowFromDB;
+    try {
+        const flowData = await getBotFlow();
+       if (flowData && flowData.nodes && flowData.edges) {
+            return flowData;
+       }
+       return { nodes: [], edges: [] };
+    } catch {
+       return { nodes: [], edges: [] };
     }
-    console.warn("Nenhum mapa encontrado no Supabase. Usando default vazio.");
-    return defaultFlow;
-};
+}
 
-// 2. Ajudante para encontrar a próxima flecha (edge) conectada
-const getProximoBloco = (flow, currentId, sourceHandle = null) => {
+// 2. Traçador de Rotas
+const getProximoBloco = (flow, blocoAtualId, portaIdSaida = null) => {
     let edge;
-    if (sourceHandle) {
-         edge = flow.edges.find(e => e.source === currentId && e.sourceHandle === sourceHandle);
+    if (portaIdSaida) {
+         edge = flow.edges.find(e => e.source === blocoAtualId && e.sourceHandle === portaIdSaida);
     } else {
-         edge = flow.edges.find(e => e.source === currentId);
+         edge = flow.edges.find(e => e.source === blocoAtualId);
     }
     if (!edge) return null;
     return flow.nodes.find(n => n.id === edge.target);
 };
 
-// 3. O Motor que executa visualmente a caixinha atual
-const executarBloco = async (flow, bloco, telefone, mensagemMembro) => {
+// 🌟 FUNÇÃO MÁGICA DE VARIÁVEIS (V4)
+const injetarVariaveis = (textoCru, telefone, nomeContato) => {
+    if (!textoCru) return "";
+    let textoPronto = textoCru;
+    
+    // Captura da data e hora exata do servidor em fuso horário de Brasília
+    const dataAjustadaStr = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    const pedacos = dataAjustadaStr.split(', ');
+    const txtDataReal = pedacos[0]; // ex: 03/01/2026
+    const txtHoraReal = pedacos[1].split(':').slice(0, 2).join(':'); // ex: 14:30
+    
+    // Calcula a Saudação ("Bom dia", "Boa tarde", "Boa noite")
+    const horaNumerica = parseInt(txtHoraReal.split(":")[0]);
+    let txSaudacao = "Bom dia";
+    if (horaNumerica >= 12 && horaNumerica < 18) txSaudacao = "Boa tarde";
+    else if (horaNumerica >= 18 || horaNumerica < 4) txSaudacao = "Boa noite";
+
+    // 1. Substitui nome do contato (e arruma primeira letra maiúscula)
+    const nomeCapitalizado = nomeContato.charAt(0).toUpperCase() + nomeContato.slice(1);
+    textoPronto = textoPronto.replace(/\{\{nome\}\}/gi, nomeCapitalizado);
+    
+    // 2. Telefone bruto
+    textoPronto = textoPronto.replace(/\{\{telefone\}\}/gi, telefone);
+    
+    // 3. Saudação do Dia
+    textoPronto = textoPronto.replace(/\{\{saudacao\}\}/gi, txSaudacao);
+    
+    // 4. Hora e Data do sistema
+    textoPronto = textoPronto.replace(/\{\{hora\}\}/gi, txtHoraReal);
+    textoPronto = textoPronto.replace(/\{\{data\}\}/gi, txtDataReal);
+    
+    return textoPronto;
+};
+
+// 3. O Motor de Execução (O que o robô faz quando "Pisa" num bloco)
+const executarBloco = async (flow, bloco, telefone, mensagemMembro = "", nomeContato = "amigo(a)") => {
     if (!bloco) return;
     
-    // Atualiza imediatamente que o lead está nesta caixinha
     await updateLeadState(telefone, bloco.id);
     console.log(`[Flow Engine] Executando bloco: ${bloco.type} para ${telefone}`);
 
     try {
         switch (bloco.type) {
             case 'messageNode':
-                await sendText(telefone, bloco.data.text || "");
+                const textoFinal = injetarVariaveis(bloco.data.text || "", telefone, nomeContato);
+                await sendText(telefone, textoFinal);
                 
                 const proxMensagem = getProximoBloco(flow, bloco.id);
                 if (proxMensagem) {
-                     // Timer de digitação sincronizado para Vercel não matar!
                      await new Promise(res => setTimeout(res, 1500));
-                     await executarBloco(flow, proxMensagem, telefone, mensagemMembro);
+                     await executarBloco(flow, proxMensagem, telefone, mensagemMembro, nomeContato);
                 }
                 break;
 
             case 'menuNode':
-                await sendMenu(telefone, bloco.data.text || "Escolha uma opção:", bloco.data.options || []);
-                // NÃO CHAMA O PRÓXIMO AQUI! O robô "dorme" até o usuário enviar outra mensagem clicando no menu.
+                const menuTitleParsed = injetarVariaveis(bloco.data.text || "Escolha uma opção:", telefone, nomeContato);
+                await sendMenu(telefone, menuTitleParsed, bloco.data.options || []);
                 break;
 
             case 'imageNode':
-                await sendImage(telefone, bloco.data.imageUrl || "https://fakeimg.pl/600x400?text=Sem+Link", bloco.data.caption || "");
+                const captionParsed = injetarVariaveis(bloco.data.caption || "", telefone, nomeContato);
+                await sendImage(telefone, bloco.data.imageUrl || "https://fakeimg.pl/600x400?text=Sem+Link", captionParsed);
                 
                 const proxImage = getProximoBloco(flow, bloco.id);
                 if (proxImage) {
                      await new Promise(res => setTimeout(res, 1500));
-                     await executarBloco(flow, proxImage, telefone, mensagemMembro);
+                     await executarBloco(flow, proxImage, telefone, mensagemMembro, nomeContato);
                 }
                 break;
 
@@ -66,118 +102,92 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro) => {
                  let portaEscolhida = 'true';
                  
                  if (bloco.data.rule === 'variavel') {
-                     // Lógica MVP: Checa se a pessoa digitou "sim"
                      portaEscolhida = mensagemMembro.toLowerCase().trim() === 'sim' ? 'true' : 'false';
                  } else {
-                     // Lógica Horário: A Vercel roda em UTC (Inglaterra/EUA), precisamos forçar a hora do Brasil!
                      const options = { timeZone: 'America/Sao_Paulo', hour: 'numeric', hour12: false };
                      const horaNoBrasilStr = new Intl.DateTimeFormat('pt-BR', options).format(new Date());
-                     const horaAtual = parseInt(horaNoBrasilStr); // Pega a hora local real de BR
+                     const horaAtual = parseInt(horaNoBrasilStr);
 
                      const start = parseInt((bloco.data.startTime || '08').split(':')[0]);
                      const end = parseInt((bloco.data.endTime || '18').split(':')[0]);
                      
-                     // Checa se está no expediente
-                     if (horaAtual >= start && horaAtual < end) {
-                          portaEscolhida = 'true'; // Expediente
-                     } else {
-                          portaEscolhida = 'false'; // Fora do expediente
-                     }
+                     portaEscolhida = (horaAtual >= start && horaAtual < end) ? 'true' : 'false';
                  }
 
                  const proximaCondicao = getProximoBloco(flow, bloco.id, portaEscolhida);
                  if (proximaCondicao) {
-                      await executarBloco(flow, proximaCondicao, telefone, mensagemMembro);
+                      await executarBloco(flow, proximaCondicao, telefone, mensagemMembro, nomeContato);
                  }
                  break;
 
             case 'actionNode':
-                 // Exemplo Trivial: Transfere para humano (Apenas para o funil)
-                 if (bloco.data.actionType === 'transferir') {
+                 if (bloco.data.actionType === 'transferir' || bloco.data.actionType === 'human_transfer') {
                      console.log(`[Ação] Transferindo ${telefone} para atendente humano.`);
-                     await updateLeadState(telefone, 'HUMANO');
+                     await updateLeadState(telefone, 'HUMAN_MODE');
                  } else {
-                     // Passa direto pra frente se for outra Ação simples
                      const proxAcao = getProximoBloco(flow, bloco.id);
-                     if (proxAcao) await executarBloco(flow, proxAcao, telefone, mensagemMembro);
+                     if (proxAcao) await executarBloco(flow, proxAcao, telefone, mensagemMembro, nomeContato);
                  }
                  break;
 
             case 'delayNode':
-                 // Na vida real serverless vira CronJob. No MVP, dormimos o limite da Vercel
                  const milisegundos = (parseInt(bloco.data.tempo) || 1) * 1000;
-                 console.log(`[Aguardando] ${milisegundos}ms para o lead ${telefone}...`);
-                 
                  await new Promise(res => setTimeout(res, milisegundos));
                  
                  const proxDelay = getProximoBloco(flow, bloco.id);
-                 if (proxDelay) await executarBloco(flow, proxDelay, telefone, mensagemMembro);
+                 if (proxDelay) await executarBloco(flow, proxDelay, telefone, mensagemMembro, nomeContato);
                  break;
 
             default:
-                 console.log(`[Aviso] Bloco desconhecido e ignorado: ${bloco.type}`);
+                 console.log(`[Aviso] Bloco ignorado: ${bloco.type}`);
         }
     } catch (e) {
         console.error("Falha ao executar bloco:", e.message);
     }
 }
 
-// 4. A Função Mestra: Chamada toda vez que o WhatsApp apita
-const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado) => {
+// 4. A Função Mestra
+const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado, nomeContato = "amigo(a)") => {
     const flow = await carregarGrafoJSON();
 
-    // Cenário 1: Lead completamente novo (Nunca falou ou State resetado)
     if (!posicaoAtualId) {
-        // Pega o primeiro bloco que desenhamos no mapa (Normalmente as Boas Vindas)
-        // OBS: Numa árvore real, você procura o bloco que NÃO tem entrada (source)
         const primeiroBlocoDaTela = flow.nodes[0]; 
-        
         if (primeiroBlocoDaTela) {
-            await executarBloco(flow, primeiroBlocoDaTela, telefone, textoDigitado);
+            await executarBloco(flow, primeiroBlocoDaTela, telefone, textoDigitado, nomeContato);
         }
         return;
     }
 
-    // Cenário 2: O Lead já estava conversando. Acha onde ele parou!
     const blocoAtual = flow.nodes.find(n => n.id === posicaoAtualId);
     
     if (!blocoAtual) {
-        // Se o banco apontar pra um bloco que não existe mais no JSON (você deletou no painel)
-        console.log("Bloco apagado do mapa. Reiniciando funil.");
-        await executarBloco(flow, flow.nodes[0], telefone, textoDigitado);
+        await executarBloco(flow, flow.nodes[0], telefone, textoDigitado, nomeContato);
         return;
     }
 
-    // Cenário 3: O cara clicou numa opção de um MENU UAZAPI. Precisamos adivinhar a porta (Handle).
     if (blocoAtual.type === 'menuNode') {
         const arrayOpcoes = blocoAtual.data.options || [];
-        
-        // A UAZAPI te devolve o título do botão clicado como string no Callback
         const indiceBotao = arrayOpcoes.findIndex(opt => opt.toLowerCase().trim() === textoDigitado.toLowerCase().trim());
         
         let idPortaConectada = null;
         if (indiceBotao >= 0) {
             idPortaConectada = `option-${indiceBotao}`;
         } else {
-            console.log(`[Flow Engine] Lead ${telefone} digitou algo ignorado pelo Menu. Silenciando...`);
-            return; // Encerra sem chatear o cliente e mantém ele no `current_node` MENU.
+            console.log(`[Flow Engine] Silenciando menu...`);
+            return;
         }
 
-        // Se acertou o botão, acha pra qual caixinha a linha daquele botão estava ligada!
         const blocoSeguinte = getProximoBloco(flow, blocoAtual.id, idPortaConectada);
         if (blocoSeguinte) {
-             await executarBloco(flow, blocoSeguinte, telefone, textoDigitado);
+             await executarBloco(flow, blocoSeguinte, telefone, textoDigitado, nomeContato);
         } else {
-             console.log("Fim do fluxo (O botão clicado não tinha flecha conectada).");
-             await updateLeadState(telefone, null); // Reseta
+             await updateLeadState(telefone, null); 
         }
     } 
-    // Outros cenários onde o cara responde fora de menu, como numa pergunta livre.
     else {
-        // Apenas acha o próximo nó da flecha única e manda bala.
         const blocoSeguinte = getProximoBloco(flow, blocoAtual.id);
         if (blocoSeguinte) {
-             await executarBloco(flow, blocoSeguinte, telefone, textoDigitado);
+             await executarBloco(flow, blocoSeguinte, telefone, textoDigitado, nomeContato);
         }
     }
 }
@@ -188,4 +198,3 @@ module.exports = {
     getProximoBloco,
     executarBloco
 };
-
