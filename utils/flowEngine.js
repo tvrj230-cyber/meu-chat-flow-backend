@@ -183,5 +183,9 @@ const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado
 }
 
 module.exports = {
-    processarMensagemDaUAZAPI
+    processarMensagemDaUAZAPI,
+    carregarGrafoJSON,
+    getProximoBloco,
+    executarBloco
 };
+
