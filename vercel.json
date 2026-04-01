@@ -6,7 +6,17 @@
       "use": "@vercel/node"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron-remarketing",
+      "schedule": "0 * * * *"
+    }
+  ],
   "routes": [
+    {
+      "src": "/api/cron-remarketing",
+      "dest": "/api/cron-remarketing.js"
+    },
     {
       "src": "/(.*)",
       "dest": "/api/webhook.js"
