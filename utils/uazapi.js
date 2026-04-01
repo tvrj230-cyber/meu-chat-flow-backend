@@ -2,11 +2,13 @@ const axios = require('axios');
 
 const UAZAPI_SERVER = process.env.UAZAPI_SERVER_URL || 'https://api.uazapi.com';
 
-// Função blindada que busca o token na hora (sem erro de cold-start)
 async function buildHeaders() {
   const token = process.env.UAZAPI_TOKEN || '';
   return {
+    // Vamos inundar a requisição com o token em todos os formatos que Sistemas Customizados usam,
+    // garantindo que ele ache o bendito "token"!
     'apikey': token,
+    'token': token,
     'Authorization': `Bearer ${token}`,
     'instance': process.env.UAZAPI_INSTANCE || '56mMDx', 
     'Content-Type': 'application/json'
@@ -16,14 +18,14 @@ async function buildHeaders() {
 async function sendText(phone, text) {
   try {
     const headers = await buildHeaders();
-    console.log(`[DEBUG] Rota Customizada UAZAPI. Token lido com sucesso (Tam: ${headers.apikey.length})`);
+    console.log(`[DEBUG] Rota /send/text disparada. Token lido com sucesso!`);
     
-    // Voltando para a Rota original e Payload original que a Uazapi aceita
     const url = `${UAZAPI_SERVER}/send/text`;
     const payload = {
       instance: process.env.UAZAPI_INSTANCE,
       number: phone,
-      text: text
+      text: text,
+      token: process.env.UAZAPI_TOKEN // Também colocado dentro do corpo JSON!
     };
 
     const res = await axios.post(url, payload, { headers });
@@ -46,7 +48,8 @@ async function sendMenu(phone, text, options) {
       number: phone,
       type: "button",
       text: text,
-      choices: options
+      choices: options,
+      token: process.env.UAZAPI_TOKEN
     };
 
     const res = await axios.post(url, payload, { headers });
