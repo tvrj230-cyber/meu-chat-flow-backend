@@ -5,6 +5,7 @@ const supabaseUrl = process.env.SUPABASE_URL || 'https://fake.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY || 'fake-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Busca o Lead no Banco de Dados para ver onde ele parou
 async function getLeadState(phone) {
   let { data, error } = await supabase
     .from('leads')
@@ -27,14 +28,36 @@ async function getLeadState(phone) {
   return data;
 }
 
+// Atualiza o estado da pessoa, anotando que horas isso aconteceu
 async function updateLeadState(phone, nodeId, tag = null) {
-  const updates = { current_node: nodeId };
+  const updates = { 
+    current_node: nodeId,
+    updated_at: new Date().toISOString() // Hora exata de agora
+  };
+  
   const { error } = await supabase
     .from('leads')
     .update(updates)
     .eq('phone', phone);
   
   if (error) console.error("Erro ao atualizar lead:", error);
+}
+
+// Pesca leads que estão parados a mais de X horas no mesmo bloco
+async function getStagnantLeads(hours) {
+  const pastTime = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+  
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .neq('current_node', null)
+    .lt('updated_at', pastTime); // A data salva é Menor (Mais antiga) do que o tempo limite
+
+  if (error) {
+    console.error("Erro ao buscar leads inativos:", error);
+    return [];
+  }
+  return data || [];
 }
 
 // Busca o fluxo (mapa) do banco de dados
@@ -46,10 +69,10 @@ async function getBotFlow() {
     .single();
     
   if (error || !data) {
-    console.error("Erro ao buscar fluxo Supabase:", error);
+    console.error("Erro ao buscar o webhook/fluxo do Supabase:", error);
     return null;
   }
   return data.flow_data;
 }
 
-module.exports = { getLeadState, updateLeadState, getBotFlow, supabase };
+module.exports = { getLeadState, updateLeadState, getBotFlow, getStagnantLeads, supabase };
