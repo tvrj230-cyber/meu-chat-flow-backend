@@ -28,9 +28,9 @@ const getProximoBloco = (flow, blocoAtualId, portaIdSaida = null) => {
     return flow.nodes.find(n => n.id === edge.target);
 };
 
-// 🌟 FUNÇÃO MÁGICA DE VARIÁVEIS (V4)
+// 🌟 FUNÇÃO MÁGICA DE VARIÁVEIS NA BLINDADA (V4.1)
 const injetarVariaveis = (textoCru, telefone, nomeContato) => {
-    if (!textoCru) return "";
+    if (!textoCru || typeof textoCru !== "string") return "";
     let textoPronto = textoCru;
     
     // Captura da data e hora exata do servidor em fuso horário de Brasília
@@ -45,20 +45,21 @@ const injetarVariaveis = (textoCru, telefone, nomeContato) => {
     if (horaNumerica >= 12 && horaNumerica < 18) txSaudacao = "Boa tarde";
     else if (horaNumerica >= 18 || horaNumerica < 4) txSaudacao = "Boa noite";
 
-    // 1. Substitui nome do contato (e arruma primeira letra maiúscula)
-    const nomeCapitalizado = nomeContato.charAt(0).toUpperCase() + nomeContato.slice(1);
-    textoPronto = textoPronto.replace(/\{\{nome\}\}/gi, nomeCapitalizado);
+    // Proteção rigorosa do nome (Caso venha Null ou Vazio da UAZAPI)
+    let nomeSeguro = "amigo(a)";
+    if (nomeContato && typeof nomeContato === 'string' && nomeContato.trim().length > 0) {
+        nomeSeguro = nomeContato.trim();
+    }
+    const nomeCapitalizado = nomeSeguro.charAt(0).toUpperCase() + nomeSeguro.slice(1);
+
+    // Substituições Dinâmicas Tolerantes (Ignora se o usuário colocou espaços, Ex: {{ nome }} )
+    textoPronto = textoPronto.replace(/\{\{\s*nome\s*\}\}/gi, nomeCapitalizado);
+    textoPronto = textoPronto.replace(/\{\{\s*telefone\s*\}\}/gi, telefone);
+    textoPronto = textoPronto.replace(/\{\{\s*saudacao\s*\}\}/gi, txSaudacao);
+    textoPronto = textoPronto.replace(/\{\{\s*hora\s*\}\}/gi, txtHoraReal);
+    textoPronto = textoPronto.replace(/\{\{\s*data\s*\}\}/gi, txtDataReal);
     
-    // 2. Telefone bruto
-    textoPronto = textoPronto.replace(/\{\{telefone\}\}/gi, telefone);
-    
-    // 3. Saudação do Dia
-    textoPronto = textoPronto.replace(/\{\{saudacao\}\}/gi, txSaudacao);
-    
-    // 4. Hora e Data do sistema
-    textoPronto = textoPronto.replace(/\{\{hora\}\}/gi, txtHoraReal);
-    textoPronto = textoPronto.replace(/\{\{data\}\}/gi, txtDataReal);
-    
+    console.log(`[Lexical Engine] Texto Cru: "${textoCru}" -> Convertido para: "${textoPronto}"`);
     return textoPronto;
 };
 
@@ -67,7 +68,7 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro = "", nomeCon
     if (!bloco) return;
     
     await updateLeadState(telefone, bloco.id);
-    console.log(`[Flow Engine] Executando bloco: ${bloco.type} para ${telefone}`);
+    console.log(`[Flow Engine] Executando bloco: ${bloco.type} para ${telefone} (Nome: ${nomeContato})`);
 
     try {
         switch (bloco.type) {
