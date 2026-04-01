@@ -17,12 +17,12 @@ module.exports = async (req, res) => {
             telefoneMembro = payload.chat.wa_chatid.split('@')[0];
         }
 
-        // 🌟 Tenta capturar o nome de perfil do Usuário que ele salvou no próprio WhatsApp!
+        // 🌟 Captura Inteligente do Nome! (Baseado na leitura oficial de Payload da UAZAPI)
         let nomeDoMembro = "amigo(a)";
-        if (payload?.message?.pushName) nomeDoMembro = payload.message.pushName;
-        else if (payload?.pushName) nomeDoMembro = payload.pushName;
-        else if (payload?.data?.pushName) nomeDoMembro = payload.data.pushName;
-        else if (payload?.sender?.name) nomeDoMembro = payload.sender.name;
+        if (payload?.message?.senderName) nomeDoMembro = payload.message.senderName;
+        else if (payload?.chat?.name) nomeDoMembro = payload.chat.name;
+        else if (payload?.chat?.wa_name) nomeDoMembro = payload.chat.wa_name;
+        else if (payload?.message?.pushName) nomeDoMembro = payload.message.pushName;
 
         let mensagemRecebida = "";
         if (payload?.message?.buttonOrListid) {
