@@ -6,7 +6,7 @@ const supabaseKey = process.env.SUPABASE_KEY || 'fake-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Busca o Lead no Banco de Dados para ver onde ele parou
-async function getLeadState(phone) {
+async function getLeadState(phone, nome = "amigo(a)") {
   let { data, error } = await supabase
     .from('leads')
     .select('*')
@@ -16,7 +16,7 @@ async function getLeadState(phone) {
   if (!data) {
     const { data: newData, error: insertError } = await supabase
       .from('leads')
-      .insert([{ phone, whatsapp: phone, current_node: null }])
+      .insert([{ nome, phone, whatsapp: phone, current_node: null }])
       .select()
       .single();
     if (insertError) {

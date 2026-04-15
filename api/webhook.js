@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
              return res.status(200).json({ status: "reset_forced" });
         }
 
-        const stateDoLead = await getLeadState(telefoneMembro);
+        const stateDoLead = await getLeadState(telefoneMembro, nomeDoMembro);
         
         if (stateDoLead?.current_node === 'HUMAN_MODE') {
              console.log(`Ignorando ${telefoneMembro}. (Traqueado para Atendimento Humano).`);
