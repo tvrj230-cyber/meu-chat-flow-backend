@@ -58,17 +58,18 @@ async function sendImage(phone, imageUrl, caption) {
     const headers = await buildHeaders();
     console.log(`[DEBUG] Rota Imagem disparada -> ${phone} c/ link: ${imageUrl}`);
     
-    const tentativas = [
-        // Tentativa 1: O Padrão exato da documentação send/media
+    // UAZAPI/Evolution usa variações para Mídia. Tentaremos o Padrão Evolution, e os genéricos.
+        const tentativas = [
+        // Tentativa Ouro: O Padrão exato da documentação com a chave "file"
         {
            url: `${UAZAPI_SERVER}/send/media`,
            body: {
                instance: process.env.UAZAPI_INSTANCE,
                number: phone,
-               media: imageUrl,
-               url: imageUrl, // enviamos ambos por garantia contra a documentação
                type: "image",
-               caption: caption || "",
+               file: imageUrl, // A palavra mágica exigida pela UAZAPI!
+               caption: caption || "", // Suporte a legenda padrão
+               text: caption || "", // Algumas APIs lêem 'text' invés de 'caption'
                token: process.env.UAZAPI_TOKEN
            }
         },
@@ -84,7 +85,7 @@ async function sendImage(phone, imageUrl, caption) {
                }
            }
         },
-        // Tentativa 3: Padrão Legado
+        // Tentativa 3: Padrão Legado (Antigo UAZAPI)
         {
            url: `${UAZAPI_SERVER}/send/image`,
            body: {
@@ -101,7 +102,7 @@ async function sendImage(phone, imageUrl, caption) {
     for (let config of tentativas) {
         try {
             const res = await axios.post(config.url, config.body, { headers });
-            if (res.status === 200 || res.status === 201) return res.data; // Imagem enviada com sucesso!
+            if (res.status === 200 || res.status === 201) return res.data; // Imagem enviada!
         } catch (e) {
             lastError = e?.response?.data || e.message;
         }
