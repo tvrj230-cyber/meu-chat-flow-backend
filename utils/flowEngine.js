@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { sendText, sendMenu, sendImage } = require('./uazapi');
-const { updateLeadState, getBotFlow } = require('./supabase');
+const { updateLeadState, updateLeadEmail, getBotFlow } = require('./supabase');
 
 // 1. Carregador Dinâmico do Mapa gerado no Frontend via Supabase
 const carregarGrafoJSON = async () => {
@@ -139,6 +139,12 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro = "", nomeCon
                  if (proxDelay) await executarBloco(flow, proxDelay, telefone, mensagemMembro, nomeContato);
                  break;
 
+            case 'captureNode':
+                 const askMsg = injetarVariaveis(bloco.data.text || "Qual seu e-mail?", telefone, nomeContato);
+                 await sendText(telefone, askMsg);
+                 // Não avança para o próximo bloco, permanece aqui aguardando resposta
+                 break;
+
             default:
                  console.log(`[Aviso] Bloco ignorado: ${bloco.type}`);
         }
@@ -147,12 +153,23 @@ const executarBloco = async (flow, bloco, telefone, mensagemMembro = "", nomeCon
     }
 }
 
+// Localiza a raiz do fluxo (Onde ele realmente começa no Canvas)
+const getBlocoInicial = (flow) => {
+    if (!flow || !flow.nodes || flow.nodes.length === 0) return null;
+    const targets = flow.edges.map(e => e.target);
+    const roots = flow.nodes.filter(n => !targets.includes(n.id));
+    if (roots.length > 0) {
+        return roots.sort((a, b) => (a.position?.x || 0) - (b.position?.x || 0))[0];
+    }
+    return [...flow.nodes].sort((a, b) => (a.position?.x || 0) - (b.position?.x || 0))[0];
+};
+
 // 4. A Função Mestra
 const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado, nomeContato = "amigo(a)") => {
     const flow = await carregarGrafoJSON();
 
     if (!posicaoAtualId) {
-        const primeiroBlocoDaTela = flow.nodes[0]; 
+        const primeiroBlocoDaTela = getBlocoInicial(flow); 
         if (primeiroBlocoDaTela) {
             await executarBloco(flow, primeiroBlocoDaTela, telefone, textoDigitado, nomeContato);
         }
@@ -162,7 +179,10 @@ const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado
     const blocoAtual = flow.nodes.find(n => n.id === posicaoAtualId);
     
     if (!blocoAtual) {
-        await executarBloco(flow, flow.nodes[0], telefone, textoDigitado, nomeContato);
+        const primeiroDeVerdade = getBlocoInicial(flow);
+        if (primeiroDeVerdade) {
+            await executarBloco(flow, primeiroDeVerdade, telefone, textoDigitado, nomeContato);
+        }
         return;
     }
 
@@ -185,6 +205,27 @@ const processarMensagemDaUAZAPI = async (telefone, posicaoAtualId, textoDigitado
              await updateLeadState(telefone, null); 
         }
     } 
+    else if (blocoAtual.type === 'captureNode') {
+        const userInput = textoDigitado.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (emailRegex.test(userInput)) {
+             // E-mail válido, salva no CRM
+             await updateLeadEmail(telefone, userInput);
+             
+             // Avança para o próximo bloco
+             const blocoSeguinte = getProximoBloco(flow, blocoAtual.id);
+             if (blocoSeguinte) {
+                  await executarBloco(flow, blocoSeguinte, telefone, textoDigitado, nomeContato);
+             } else {
+                  await updateLeadState(telefone, null);
+             }
+        } else {
+             // E-mail inválido, envia mensagem de erro e aborta (mantém no mesmo nó)
+             const errorMsg = injetarVariaveis(blocoAtual.data.errorMessage || "E-mail inválido, tente novamente.", telefone, nomeContato);
+             await sendText(telefone, errorMsg);
+        }
+    }
     else {
         const blocoSeguinte = getProximoBloco(flow, blocoAtual.id);
         if (blocoSeguinte) {
