@@ -43,6 +43,25 @@ async function updateLeadState(phone, nodeId, tag = null) {
   if (error) console.error("Erro ao atualizar lead:", error);
 }
 
+// Salva o e-mail coletado no CRM
+async function updateLeadEmail(phone, email) {
+  const updates = { 
+    email: email,
+    updated_at: new Date().toISOString()
+  };
+  
+  const { error } = await supabase
+    .from('leads')
+    .update(updates)
+    .eq('phone', phone);
+  
+  if (error) {
+    console.error("Erro ao atualizar email do lead:", error);
+    return false;
+  }
+  return true;
+}
+
 // Pesca leads que estão parados a mais de X horas no mesmo bloco
 async function getStagnantLeads(hours) {
   const pastTime = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
@@ -75,4 +94,4 @@ async function getBotFlow() {
   return data.flow_data;
 }
 
-module.exports = { getLeadState, updateLeadState, getBotFlow, getStagnantLeads, supabase };
+module.exports = { getLeadState, updateLeadState, updateLeadEmail, getBotFlow, getStagnantLeads, supabase };
